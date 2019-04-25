@@ -1,0 +1,46 @@
+// AllenNLP configuration files are written in Jsonnet, a superset of JSON
+// with added functionalities such as variables and comments (like this one :).
+
+// For example, you can write variable declrations as follows:
+local embedding_dim = 128;
+local hidden_dim = 128;
+
+{
+  "dataset_reader": {
+    "type": "sst_tokens"
+  },
+  "train_data_path": "data/stanfordSentimentTreebank/trees/train.txt",
+  "validation_data_path": "data/stanfordSentimentTreebank/trees/dev.txt",
+
+  "model": {
+    "type": "lstm_classifier",
+
+    "word_embeddings": {
+      "tokens": {
+        "type": "embedding",
+        "embedding_dim": embedding_dim
+      }
+    },
+
+    // In Python code, you need to wrap encoders (e.g., torch.nn.LSTM) by PytorchSeq2VecWrapper.
+    // Conveniently, "wrapped" version of popular encoder types ("lstm", "gru", ...)
+    // are already registered (see https://github.com/allenai/allennlp/blob/master/allennlp/modules/seq2vec_encoders/__init__.py)
+    // so you can just use them by specifying intuitive names
+    "encoder": {
+      "type": "lstm",
+      "input_size": embedding_dim,
+      "hidden_size": hidden_dim
+    }
+  },
+  "iterator": {
+    "type": "bucket",
+    "batch_size": 32,
+    "sorting_keys": [["tokens", "num_tokens"]]
+  },
+  "trainer": {
+    "optimizer": "adam",
+    "num_epochs": 50,
+    "patience": 5
+  }
+}
+
